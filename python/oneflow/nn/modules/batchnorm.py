@@ -50,16 +50,16 @@ class _NormBase(Module):
                 "num_batches_tracked", flow.tensor(0, dtype=flow.int64)
             )
         else:
-            self.register_parameter("running_mean", None)
-            self.register_parameter("running_var", None)
+            self.register_buffer("running_mean", None)
+            self.register_buffer("running_var", None)
             self.register_buffer("num_batches_tracked", None)
         self.reset_parameters()
 
     def reset_running_stats(self) -> None:
         if self.track_running_stats:
-            self.running_mean.zero_(0)
-            self.running_var.fill_(1)
-            self.num_batches_tracked.zero_()
+            self.running_mean.fill_(0.)
+            self.running_var.fill_(1.)
+            self.num_batches_tracked.fill_(0)
 
     def reset_parameters(self) -> None:
         self.reset_running_stats()
@@ -134,20 +134,21 @@ class _BatchNorm(_NormBase):
             for dim in range(len(x.shape)):
                 if dim != 1:
                     reduce_axis.append(dim)
-            mean = x.mean(dim=reduce_axis, keepdim=False)
-            variance = x.var(dim=reduce_axis, unbiased=False, keepdim=False)
+            batch_mean = x.mean(dim=reduce_axis, keepdim=False)
+            batch_variance = x.var(dim=reduce_axis, unbiased=False, keepdim=False)
             if self.training and self.track_running_stats:
-                running_mean = (
-                    self.momentum * self.running_mean + (1 - self.momentum) * mean
+                # use unbiased variance to update running_var
+                batch_unbiased_variance = x.var(dim=reduce_axis, unbiased=True, keepdim=False)
+                self.running_mean = (
+                    self.momentum * self.running_mean + (1 - self.momentum) * batch_mean
                 )
-                running_var = (
-                    self.momentum * self.running_var + (1 - self.momentum) * variance
+                self.running_var = (
+                    self.momentum * self.running_var + (1 - self.momentum) * batch_unbiased_variance
                 )
-                self.__setattr__("running_mean", running_mean)
-                self.__setattr__("running_var", running_var)
+
             else:
-                mean = mean if self.running_mean is None else self.running_mean
-                variance = variance if self.running_var is None else self.running_var
+                mean = batch_mean if self.running_mean is None else self.running_mean
+                variance = batch_variance if self.running_var is None else self.running_var
             axis = 1
             params_shape = [x.shape[axis]]
             weight = self.weight
@@ -170,8 +171,8 @@ class _BatchNorm(_NormBase):
                 raise ValueError(
                     "shape of mean and variance should be 1D or has number of axes and x's"
                 )
-            variance += self.eps
-            normalized = (x - mean) * variance.rsqrt()
+
+            normalized = (x - mean) * (variance + self.eps).rsqrt()
             affined = normalized
             if self.weight is not None:
                 affined = affined * weight
