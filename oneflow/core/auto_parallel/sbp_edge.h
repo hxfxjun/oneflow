@@ -59,14 +59,13 @@ class SbpEdge {
   //        StartNode -> EndNode, EndNode -> StartNode, StartNode -> EndNode;
   std::vector<SbpEdge<SbpSignature> *> EdgeList;
 
- private:
   // Mininum and maximum cost would not be changed by eliminations, which will generate new edges.
   // Also would not be changed by node merging, which will only perform cost copy for the expanding
   // dimensions.
   // Minimum cost in the 2D array Cost.
   // Would be initialized after GetMinCost();
   // Only used in the final graph.
-  double min_cost = -1.0;
+  // double min_cost = -1.0;
   // Maximum cost in the 2D array Cost.
   // Would be initialized after GetMaxCost();
   // Only used in the original graph.
@@ -319,11 +318,11 @@ double SbpEdge<SbpSignature>::GreedyStrategy() {
 template<class SbpSignature>
 double SbpEdge<SbpSignature>::GetMinCost() {
   // used the stored value if pre-computed.
-  if (min_cost >= 0) return min_cost;
+  // if (min_cost >= 0) return min_cost;
   // Check the size of Cost
   CHECK(Cost.size() > 0) << "Cost not initialized!" << std::endl;
   // Compute the min_cost
-  min_cost = *std::min_element(Cost[0].begin(), Cost[0].end());
+  double min_cost = *std::min_element(Cost[0].begin(), Cost[0].end());
   for (int32_t i = 1; i < Cost.size(); i++) {
     double min_cost_row = *std::min_element(Cost[i].begin(), Cost[i].end());
     if (min_cost_row < min_cost) min_cost = min_cost_row;

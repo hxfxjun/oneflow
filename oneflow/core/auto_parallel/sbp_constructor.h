@@ -39,14 +39,14 @@ class SbpConstructor {
   Algorithm::SbpGraph<SbpSignature> sbp_graph;
 
   SbpConstructor() {
-    std::ifstream ifs("/home/liyipeng/OneFlow-Benchmark/Classification/cnns/CostRatioFile.txt");
-    if (ifs.is_open()) {
-      ifs >> CostRatio;
-    } else {
-      CostRatio = 0.1;
-      std::cout << "CostRatioFile.txt does not exist." << std::endl;
-    }
-    ifs.close();
+    // std::ifstream ifs("/home/liyipeng/OneFlow-Benchmark/Classification/cnns/CostRatioFile.txt");
+    // if (ifs.is_open()) {
+    //   ifs >> CostRatio;
+    // } else {
+    CostRatio = 1e-3;
+    //   std::cout << "CostRatioFile.txt does not exist." << std::endl;
+    // }
+    // ifs.close();
     std::cout << "Cost Ratio: " << CostRatio << std::endl;
   };
   ~SbpConstructor() = default;

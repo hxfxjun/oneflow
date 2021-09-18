@@ -94,6 +94,9 @@ void SbpCollector::InitializeCopyCostFromNode2Proxy(SbpNode<SbpSignature>* sbp_p
   // A buffer to store the sbp parallel id
   std::vector<int32_t> sbp_parallel_ids;
 
+  // test debug
+  std::cout << sbp_node_producer->op_node->op().op_name() << std::endl;
+
   // look through sbp signature in producer
   for (int32_t sbp_id_producer = 0; sbp_id_producer < sbp_node_producer->SbpSignatureList.size();
        sbp_id_producer++) {
@@ -102,20 +105,42 @@ void SbpCollector::InitializeCopyCostFromNode2Proxy(SbpNode<SbpSignature>* sbp_p
         sbp_node_producer->SbpSignatureList[sbp_id_producer]->bn_in_op2sbp_parallel();
     const SbpParallel& sbp_producer = producer_sbp_bn_in_op2sbp_parallel.at(obn);
 
+    // test debug
+      if (sbp_producer.has_split_parallel())
+        std::cout << " S" << sbp_producer.split_parallel().axis();
+      if (sbp_producer.has_broadcast_parallel()) std::cout << " B";
+      if (sbp_producer.has_partial_sum_parallel()) std::cout << " P";
+      std:: cout << " to : " << std::endl;
+
     // look through sbp parallel set in consumer
     for (int32_t sbp_id_consumer = 0; sbp_id_consumer < consumer_sbp_size; sbp_id_consumer++) {
       BinarySet& sbp_parallel_set = sbp_proxy->ParallelCandidates[sbp_id_consumer];
       sbp_parallel_set.QuickOutPut(sbp_parallel_ids);
+
+      // test debug
+      std::cout << "consumer sbp id: " << sbp_id_consumer << ", to :";
 
       // look through all sbp parallels in a sbp parallel set
       for (int32_t sbp_parallel_id : sbp_parallel_ids) {
         // get sbp parallel for a logical blob in consumer
         const SbpParallel& sbp_consumer = id2SbpParallel[sbp_parallel_id];
 
-        // compute copy cost for a specific logical blob
-        sbp_edge->Cost[sbp_id_producer][sbp_id_consumer] += ComputCopyCostBetweenTwoSbpParallel(
+        // test debug
+      if (sbp_consumer.has_split_parallel())
+        std::cout << " S" << sbp_consumer.split_parallel().axis();
+      if (sbp_consumer.has_broadcast_parallel()) std::cout << " B";
+      if (sbp_consumer.has_partial_sum_parallel()) std::cout << " P";
+
+      double temp = ComputCopyCostBetweenTwoSbpParallel(
             sbp_producer, sbp_consumer, logical_blob_desc, parallel_desc, false);
+      std:: cout << temp << ", ";
+
+        // compute copy cost for a specific logical blob
+        sbp_edge->Cost[sbp_id_producer][sbp_id_consumer] += temp;
       }
+
+      // test debug
+      std::cout << std::endl;
     }
   }
 }

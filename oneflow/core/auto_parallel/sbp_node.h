@@ -558,10 +558,17 @@ void SbpNode<SbpSignature>::DetectSpreadOverlap(double max_1_comp_cost, double m
 
   // skip it if empty EdgesOut
   if (EdgesOut.empty()) return;
+  // test debug
+  std::cout << op_node->op().op_name() << std::endl << "Edge max cost: ";
 
   // total maximum copy cost of outcoming edges
   double total_copy_cost = 0.0;
-  for (SbpEdge<SbpSignature> *this_edge : EdgesOut) { total_copy_cost += this_edge->GetMaxCost(); }
+  for (SbpEdge<SbpSignature> *this_edge : EdgesOut) {
+    double temp = this_edge->GetMaxCost();
+    total_copy_cost += temp;
+    // test debug
+    std::cout << temp << ", ";
+  }
   // maximum of the computation cost of other operators
   double max_comp_cost;
   if (id == max_1_id)
@@ -574,6 +581,12 @@ void SbpNode<SbpSignature>::DetectSpreadOverlap(double max_1_comp_cost, double m
     overlap_ratio = min_ratio;
   else
     overlap_ratio = 1.0 - (1.0 - min_ratio) * max_comp_cost / total_copy_cost;
+
+  // test debug
+  std::cout << "max comp cost (1): " << max_1_comp_cost;
+  std::cout << ", (2): " << max_2_comp_cost << ", max_1_id: " << max_1_id << ", id: " << id;
+  std::cout << ", total copy cost: " << total_copy_cost << ", overlap ratio: " << overlap_ratio
+            << ", min ratio: " << min_ratio << std::endl;
 
   // Set up overlap ratio for the outcoming edges
   for (SbpEdge<SbpSignature> *this_edge : EdgesOut) {

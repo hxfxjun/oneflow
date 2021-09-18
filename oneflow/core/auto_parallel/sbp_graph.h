@@ -694,7 +694,7 @@ void SbpGraph<SbpSignature>::DetectAdjustOverlap(double CostRatio) {
 
   for (const auto &this_node : NodeList) {
     int32_t lay_num = this_node->MinLayer;
-    if(lay_num < 0) continue;
+    if (lay_num < 0) continue;
     double comp_cost = this_node->GetMinCost();
     if (comp_cost > max_2_comp_cost[lay_num]) {
       if (comp_cost > max_1_comp_cost[lay_num]) {
@@ -711,11 +711,13 @@ void SbpGraph<SbpSignature>::DetectAdjustOverlap(double CostRatio) {
   for (const auto &this_node : NodeList) {
     int32_t lay_num = this_node->MinLayer;
     // Skip proxy nodes and single node in one layer
-    if (lay_num < 0 || max_2_comp_cost[lay_num] < 0.0) continue;
-    // Detect overlap. We do not spread it since we only adjust outcoming edges.
-    double min_ratio = std::min(CostRatio, 0.5);
-    this_node->DetectSpreadOverlap(max_1_comp_cost[lay_num], max_2_comp_cost[lay_num],
-                                   max_1_id[lay_num], min_ratio);
+    // if (lay_num < 0 || max_2_comp_cost[lay_num] < 0.0) continue;
+    // // Detect overlap. We do not spread it since we only adjust outcoming edges.
+    // double min_ratio = std::min(CostRatio, 0.5);
+    if (lay_num == 174 || lay_num == 179 || lay_num == 192)
+      this_node->DetectSpreadOverlap(1e10, 1e10, 1, 0.001);
+    // this_node->DetectSpreadOverlap(max_1_comp_cost[lay_num], max_2_comp_cost[lay_num],
+    //                                max_1_id[lay_num], min_ratio);
   }
   // adjust copy cost correspondingly.
   for (const auto &this_node : NodeList) {
