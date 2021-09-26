@@ -44,6 +44,12 @@ limitations under the License.
 #include "oneflow/core/graph/op_graph.h"
 #include "oneflow/core/auto_parallel/sbp_constructor.h"
 
+#include <nvtx3/nvToolsExt.h>
+#include <sys/syscall.h>
+#include <iostream>
+#include <cuda_profiler_api.h>
+#include "oneflow/core/device/cuda_util.h"
+
 namespace std {
 
 template<>
@@ -67,6 +73,7 @@ bool operator==(const ParallelBlobConf& lhs, const ParallelBlobConf& rhs) {
 namespace {
 
 void DoJobComplete(Job* job) {
+  nvtxRangePushA("DoJobComplete");
   JobCompleter().Complete(job);
 #ifdef AUTO_PARALLEL_
   // auto-parallel
@@ -89,6 +96,7 @@ void DoJobComplete(Job* job) {
 #endif  // AUTO_PARALLEL_
   }
   JobCompleter().InsertIdentity(job);
+  nvtxRangePop();
 }
 
 std::string cluster_thrd_ids_key(const std::string& plan_name) {
