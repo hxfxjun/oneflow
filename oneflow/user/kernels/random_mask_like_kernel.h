@@ -46,10 +46,10 @@ class RandomMaskLikeKernel final : public user_op::OpKernel, public user_op::Cud
     
     int old_dev = -1;
     int new_dev = -1;
-    OF_CUDA_CHECK(cudaGetDev(&old_dev));
+    OF_CUDA_CHECK(cudaGetDevice(&old_dev));
     const auto& generator = CHECK_JUST(one::MakeGenerator(device_type));
     generator->set_current_seed(ctx->Attr<int64_t>("seed"));
-    OF_CUDA_CHECK(cudaGetDev(&new_dev));
+    OF_CUDA_CHECK(cudaGetDevice(&new_dev));
     CHECK_EQ(old_dev,new_dev);
     return std::make_shared<RandomMaskLikeKernelState>(generator);
   }
@@ -58,7 +58,7 @@ class RandomMaskLikeKernel final : public user_op::OpKernel, public user_op::Cud
   void Compute(user_op::KernelComputeContext* ctx, user_op::OpKernelState* state) const override {
     int old_dev = -1;
     int new_dev = -1;
-    OF_CUDA_CHECK(cudaGetDev(&old_dev));
+    OF_CUDA_CHECK(cudaGetDevice(&old_dev));
     const user_op::Tensor* like = ctx->Tensor4ArgNameAndIndex("like", 0);
     user_op::Tensor* out = ctx->Tensor4ArgNameAndIndex("out", 0);
     int64_t elem_cnt = like->shape().elem_cnt();
@@ -69,7 +69,7 @@ class RandomMaskLikeKernel final : public user_op::OpKernel, public user_op::Cud
     CHECK_NOTNULL(generator);
     auto random_mask_like_gen = std::make_shared<RandomMaskGenerator<device_type>>(generator);
     random_mask_like_gen->Generate(ctx->device_ctx(), elem_cnt, ctx->Attr<float>("rate"), mask);
-    OF_CUDA_CHECK(cudaGetDev(&new_dev));
+    OF_CUDA_CHECK(cudaGetDevice(&new_dev));
     CHECK_EQ(old_dev,new_dev);
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }
