@@ -47,7 +47,7 @@ class RandomMaskLikeKernel final : public user_op::OpKernel, public user_op::Cud
     int old_dev = -1;
     int new_dev = -1;
     OF_CUDA_CHECK(cudaGetDevice(&old_dev));
-    const auto& generator = CHECK_JUST(one::MakeGenerator(device_type));
+    const auto& generator = CHECK_JUST(one::MakeGenerator(device_type, old_dev));
     generator->set_current_seed(ctx->Attr<int64_t>("seed"));
     OF_CUDA_CHECK(cudaGetDevice(&new_dev));
     CHECK_EQ(old_dev,new_dev);
